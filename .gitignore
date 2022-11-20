@@ -1,1 +1,15 @@
-/.idea/
+**/target/
+**/.settings/
+**/.classpath
+**/.project
+**/dependency-reduced-pom.xml
+**/nbproject/
+**/nbproject/project.properties
+*.releaseBackup
+release.properties
+
+#IntelliJ Project directory
+.idea/
+**.iml
+.java-version
+**/nb-configuration.xml
