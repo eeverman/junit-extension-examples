@@ -1,4 +1,4 @@
-package ann_support;
+package jextension;
 
 import org.junit.jupiter.api.extension.*;
 
@@ -19,7 +19,6 @@ public class SimpleExt implements BeforeEachCallback, AfterEachCallback {
 		// reset the sys props ...
 		Properties props = new Properties();
 		props.load(getClass().getResourceAsStream("/MyFile.props"));
-
 		props.keySet().stream().forEach(k -> System.getProperties().remove(k));
 	}
 }

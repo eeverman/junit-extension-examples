@@ -1,6 +1,6 @@
-package ann_support;
+package jextension;
 
-import ann_support.misc.ExtensionContextParamResolver;
+import jextension.misc.ExtensionContextParamResolver;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +31,12 @@ public class NestedTest {
 		public void findAnnotation2ShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(AnnotationSupport.findAnnotation(
 					context.getRequiredTestClass(), SimpleAnn.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
+		}
+
+		@Test		//NEW PROPOSED METHOD - Works!
+		public void findAnnotationForExtensionShouldFindParentAnnotation(ExtensionContext context) {
+			assertTrue(ExtensionUtil.findAnnotationForExtension(
+					context, SimpleAnn.class).isPresent());
 		}
 
 	}

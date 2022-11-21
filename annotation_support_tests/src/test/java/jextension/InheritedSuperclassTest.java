@@ -1,6 +1,6 @@
-package ann_support;
+package jextension;
 
-import ann_support.misc.ExtensionContextParamResolver;
+import jextension.misc.ExtensionContextParamResolver;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,6 +49,12 @@ public class InheritedSuperclassTest extends InheritedSuperclassTestBase {
 		public void findAnnotation2ShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(AnnotationSupport.findAnnotation(
 					context.getRequiredTestClass(), SimpleAnnInherited.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
+		}
+
+		@Test		//NEW PROPOSED METHOD - Works!
+		public void findAnnotationForExtensionShouldFindParentAnnotation(ExtensionContext context) {
+			assertTrue(ExtensionUtil.findAnnotationForExtension(
+					context, SimpleAnnInherited.class).isPresent());
 		}
 
 	}

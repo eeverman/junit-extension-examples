@@ -1,4 +1,4 @@
-package ann_support;
+package jextension;
 
 @SimpleAnnInherited
 public class InheritedSuperclassTestBase {
