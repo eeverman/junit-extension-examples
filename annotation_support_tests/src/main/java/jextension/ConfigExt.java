@@ -18,6 +18,7 @@ public class ConfigExt implements BeforeEachCallback, AfterEachCallback {
 		Properties props = new Properties();
 		props.load(getClass().getResourceAsStream(findPath(context)));
 		System.setProperties(props);
+		System.out.println("ConfigExt Before");
 	}
 
 	@Override

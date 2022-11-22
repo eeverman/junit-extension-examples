@@ -12,6 +12,7 @@ public class SimpleExt implements BeforeEachCallback, AfterEachCallback {
 		Properties props = new Properties();
 		props.load(getClass().getResourceAsStream("/MyFile.props"));
 		System.setProperties(props);
+		System.out.println("SimpleExt BeforeEach!");
 	}
 
 	@Override

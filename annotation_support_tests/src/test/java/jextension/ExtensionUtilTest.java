@@ -5,11 +5,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.platform.commons.support.AnnotationSupport;
-import org.junit.platform.commons.support.SearchOption;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Uses the @ConfigAnn and ConfigExt (which uses ExtensionUtil) to test which annotation

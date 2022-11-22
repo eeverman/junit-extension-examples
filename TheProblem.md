@@ -1,16 +1,18 @@
-# A first pass at a JUnit article
+# JUnit Extension Registration via Composed Annotation - Almost (but not quite) workable
 
-JUnit's [extension system](https://junit.org/junit5/docs/current/user-guide/#extensions) includes a
-natural way to register extensions via composed annotation
-[Declarative Extension Registration](https://junit.org/junit5/docs/current/user-guide/#extensions-registration-declarative),
-but using that mechanism for extensions that require configuration is currently very difficult.
+JUnit's extension system includes a natural way to register extensions via annotations (See JUnit docs
+[Declarative Extension Registration / composed annotations section](https://junit.org/junit5/docs/current/user-guide/#extensions-registration-declarative)].
+While this system works well for simple extensions, it is not possible to use it with
+extensions that require configuration without resorting to some hacky solutions.
 
-If you are not familiar with how registration system works, here is a simple example.
+## Basics of Composed Annotation Extension Registration
+
+If you are not familiar with composed annotation extension registration, here is a quick example.
 Below is a simple extension that loads key-value pairs from the ***MyFile.props***
 properties file into `System.properties`:
 
 ```java
-public class SysPropExt implements BeforeEachCallback, AfterEachCallback {
+public class SimpleExt implements BeforeEachCallback, AfterEachCallback {
 
 	public void beforeEach(final ExtensionContext context) { 
 		Properties props = new Properties();  
@@ -25,67 +27,70 @@ public class SysPropExt implements BeforeEachCallback, AfterEachCallback {
 }
 ```
 
-There are multiple ways to register the extension for a test,
-but the most elegant is via a custom annotation:
+There are multiple ways to register the extension, but the most elegant is via a composed annotation:
 ```java
 @Target({ TYPE, METHOD, ANNOTATION_TYPE })  
 @Retention(RUNTIME)  
-@ExtendWith(SysPropExt.class)  // Causes SysPropExt to be registered where ever @SysPropAnn is used
-public @interface SysPropAnn {  }
+@ExtendWith(SimpleExt.class)  // Causes SimpleExt to be registered wherever @SimpleAnn is used
+public @interface SimpleAnn {  }
 ```
+
 Then, you can easily use that annotation on a test class or method:
 ```java
-@SysPropAnn
-public class MyTestClass { /* SysPropExt in use in this test class */ }
+@SimpleAnn
+public class MyTestClass { /* SimpleExt in use in this test class */ }
 ```
 
-All good so far, but... ***How can we configure which file is loaded by the extension??***
+## Adding Configuration to an annotation registered extension
 
-Since JUnit creates the extension instance, there is no opportunity to pass arguments.
-The solution is to pass the arguments to the annotation, then find the annotation and its arguements
-in the extension.  This makes it easy for the users of the extension, and it looks natural:
+The example above is elegant and easy, but...
+***How can we configure which file is loaded, rather than hard-code the file??***
+
+Since JUnit creates the extension instance for us, there is no opportunity to pass arguments.
+The solution is to pass the arguments to the annotation, then find the annotation and its arguments
+in the extension.  This makes it easy for the users of the extension, and usage looks natural:
  ```java
-@SysPropAnn(filepath = "/MyFile.props")
+@SimpleAnn(classpathFile = "/MyFile.props")
 public class MyTestClass { /*  */ }
 ```
 
-To do that, the annotation just needs a single extra line to declare a filepath property:
+To do that, the annotation just needs a single extra line to declare a classpathFile property:
 ```java
 @Target({ TYPE, METHOD, ANNOTATION_TYPE })  
 @Retention(RUNTIME)  
-@ExtendWith(SysPropExt.class)  
-public @interface SysPropAnn {
-	String filepath();		// Added
+@ExtendWith(SimpleExt.class)  
+public @interface SimpleAnn {
+	String classpathFile();		// Added
 }
 ```
 
 The extension will need to find the annotation to grab the value, but how?
 Junit includes two different `AnnotationSupport.findAnnotation()` methods that seem to be designed
-for the task, but they don't quite do it.  If they did, our extension could be this easy:
+for the task.  If they worked for this purpose, our extension could look like this:
 ```java
-public class SysPropExt implements BeforeEachCallback, AfterEachCallback {
+public class SimpleExt implements BeforeEachCallback, AfterEachCallback {
 	
+	// Trivial method to grab the configured value from the annotation... but it doesn't work
 	public String findPath(final ExtensionContext context) {  
-		SysPropAnn ann = AnnotationSupport.findAnnotation(  
-			context.getElement(), SysPropAnn.class).get();  
-		return ann.filepath();  
+		SimpleAnn ann = AnnotationSupport.findAnnotation(  
+			context.getElement(), SimpleAnn.class).get();  
+		return ann.classpathFile();  
 	}  
   
 	@Override  
 	public void beforeEach(final ExtensionContext context) throws IOException {
 		String findPath(context);
 		// load the file...
-	} 
-  
-	// ...
+	}
 }
 ```
-It's not that these methods are necessarily broken.  The issue is that effective scope of JUnit
-extensions is different than the scope of a Java annotations and the `findAnnotation()` methods
-tend to follow the Java model.  In Junit:
-- An extension registered on a superclass receives events for all subclass tests.
-- Similarly, an extention registered on a parent class received events for all nested tests
-(if properly marked with `@Nested`).
+
+The source of the issue is that effective scope of JUnit extensions is different than the scope of
+Java annotations, and the `findAnnotation()` methods tend to follow the Java model.
+The scope of a Junit extension follows these rules:
+- An extension registered on a superclass applies to its subclass
+- An extension registered on a parent class applies to all `@Nested` test classes
+
 
 By contrast in Java:
 - Annotations on a superclass are only applicable to a subclass if the annotation is marked as `@Inherited`.
@@ -95,34 +100,71 @@ So, if you are using an annotation to register an extension ***and the extension
 annotation because the extension needs to discover its configuration***, 
 neither of the `findAnnotation()` will work for you.
 
-The `AnnotationSupport.findAnnotation(AnnotatedElement, Class<A>)` method (AKA method 1), which finds an annotation
-of type `Class<A>`, does not search the parent classes of `@Nested` test classes.
+## The two `AnnotationSupport.findAnnotation` methods
+
+### `AnnotationSupport.findAnnotation(AnnotatedElement, Class<A>)` AKA ***Method 1*** {#Method1}
+This method finds an annotation of type `Class<A>` on the `AnnotatedElement`,
+but does not search parent classes of `@Nested` tests.
 It will search superclasses, but only for annotations marked `@Inherited`.
 
-The `AnnotationSupport.findAnnotation(Class<?>, Class<A>, SearchOption)` method (AKA method 2), which finds an annotation
-of type `Class<A>`, accepts a SearchOption which can be set to `INCLUDE_ENCLOSING_CLASSES`.
-If that option is used, this method ***will*** find annotations on parents of `@Nested` test classes.
-Similar to the other 'find' method, however, it will only search superclasses if the annotation
-is marked `@Inherited`.  Another unfortunate aspect of this method:  It was only introduced in
-JUnit 5.8.0 and is currently marked as ***EXPERIMENTAL***.
+### `AnnotationSupport.findAnnotation(Class<?>, Class<A>, SearchOption)` AKA ***Method 2*** {#Method2}
+This method finds an annotation of type `Class<A>` on the class in the 1st argument.
+My guess is that this method was created to address the shortcomings of ***Method 1***:
+This method will find annotations on parents of `@Nested` tests if the `INCLUDE_ENCLOSING_CLASSES`
+`SearchOption` is passed.
+Similar to method 1, however, it only searches superclasses if the annotation is `@Inherited`.
+Another unfortunate aspect of this method:  It was only introduced in
+JUnit 5.8.0 and is marked as ***EXPERIMENTAL***.
 
-| Method   | Finds superclass ann. if marked as inherited | Finds superclass ann. if NOT marked as inherited | Finds ann. on parent of @Nested class | Is well supported                  |     |
-|----------|----------------------------------------------|--------------------------------------------------|---------------------------------------|------------------------------------|-----|
-| Method 1 | Yes                                          | No                                               | No                                    | Yes (MAINTAINED status)            |     |
-| Method 2 | Yes                                          | No                                               | Optionally                            | No (EXPERIMENTAL status) since 5.8 |     |
+Here is a summary of these two methods:
+
+| Method         | Finds superclass ann. if marked as inherited | Finds superclass ann. if NOT marked as inherited | Finds ann. on parent of @Nested class | Is well supported                  |     |
+|----------------|----------------------------------------------|--------------------------------------------------|---------------------------------------|------------------------------------|-----|
+| ***Method 1*** | Yes                                          | No                                               | No                                    | Yes (MAINTAINED status)            |     |
+| ***Method 2*** | Yes                                          | No                                               | Optionally                            | No (EXPERIMENTAL status) since 5.8 |     |
+*Note:  There is a third method, but it is effectively the same as **method 1***
 
 
-A further challenge to both of these methods is that you have to know if the annotation you are
-looking for is on a method or class.  An extension could implement the `BeforeEachCallback` and
-`AfterEachCallback`, which are equally applicable to a class registration and a method registration.
-How can the extension know which find method to call?  Currently, there is nothing to distinguish
-between the two situations, so the extension code must search for a method annotation, check for null,
+At first glance, the situation doesn't seem so bad:  Just mark your annotations as `@Inherited` and
+use ***Method 2***.  But this is a problem if you intend to distribute your extensions.
+There is the issue of requiring a relatively recent version of JUnit (5.8 was released just a year ago)
+and the use of an ***EXPERIMENTAL*** API.
+
+More importantly, while *you* can mark your annotations as `@Inherited`, your users can re-compose
+them into their own annotations and likely would not include the `@Inherited` marker.
+It is possible that users will want to compose your annotation into a new one that *cannot* be inherited.
+That fact that your extensions break in this situation while others don't
+(because they don't need configuration) would be seen as a bug with your extensions.
+
+## Which class was the annotated class?
+
+Let's go back to the example of an extension that takes a `classpathFile` configuration. 
+The example conveniently used a short, absolute path, `/MyFile.props`.
+A reasonable and useful feature would be to accept paths relative to the annotation file.
+For instance, to load a file named 'config.props' in the same package as the class:
+
+ ```java
+@SimpleAnn(classpathFile = "config.props")
+public class MyTestClass { /*  */ }
+```
+
+But how can an extension determine that?  As an extension developer, you would need to reimplement
+and extend the existing `findAnnotation` methods to return the class on which the annotations were
+found.  Yikes!
+
+## Was the annotation on a method or class?
+
+Extensions that implement the `BeforeEachCallback` and `AfterEachCallback` are equally applicable
+to a class and method level registration, thus, their associated annotation could be marked
+as `@Target({ TYPE, METHOD })`.  When the extension's `beforeEach` and `afterEach` methods are called,
+there is nothing to distinguish the two types of registrations,
+so the extension code must search for a method annotation, check for null,
 then try searching for a class annotation.
-
+Its just one more challenge for extensions developers to potentially forget or get wrong.
 
 ## Possible Solutions for Developers creating Extensions registered with Annotations
-- To support extension registration in nested test classes, you could use the EXPERIMENTAL
-  AnnotationSupport.findAnnotation(Class, Class, SearchOption), but that is a questionable choice.
+- To support extension registration in nested test classes, you could use the ***EXPERIMENTAL***
+  ***Method 1*** AnnotationSupport.findAnnotation(Class, Class, SearchOption), but that is a questionable choice.
   The JUnit docs have a lot of warnings about using such methods,
   and it locks your users into using JUnit 5.8.0 or newer.
 - To support inherited extension registration from superclasses, you could mark all of your
@@ -146,8 +188,8 @@ then try searching for a class annotation.
 // In the properties file: 'other.props' file:
 // phaser: stun
 
-	@SysPropAnn(filepath = "/other.props")  
-	public class SysPropExtTest {  
+	@SimpleAnn(classpathFile = "/other.props")  
+	public class SimpleExtTest {  
 	  
 	@Test  
 	public void phaserShouldBeSetToStun() {  
@@ -160,7 +202,7 @@ However, things get difficult when the annotation is on a superclass:
 
 ```java
 
-@SysPropAnn(filepath = "/other.props")  
+@SimpleAnn(classpathFile = "/other.props")  
 public class InheritedTestBase {  /* Empty */ }
 
 //
@@ -179,7 +221,7 @@ public class InheritedTest extends InheritedTestBase {
 It turns out that none of the `AnnotationSupport.findAnnotation` support method will find the annotation on the super class.  There is another possibility:  The annotation could be on a containing class, like this:
 
 ```java
-@SysPropAnn  
+@SimpleAnn  
 public class NestedTest {  
   
   
@@ -223,12 +265,12 @@ public class ReadPropsExt implements BeforeEachCallback {
 
 	@Override  
 	public void beforeEach(final ExtensionContext context) {  
-	  String path = findTheFilePath(context);
+	  String path = findTheClassPathFile(context);
 	  ... do something with the path ...
 	}
 
 
-	public void findTheFilePath(final ExtensionContext context) {  
+	public void findTheClassPathFile(final ExtensionContext context) {  
 	 //how do I find the annotation?? 
 	}
 }
@@ -251,10 +293,13 @@ public MyTestClass {
 }
 ```
 
-Note:  Good to add the detail that its not possible to know if beforeEach is annotated on the method or class.
+Notes:
+- Good to add the detail that its not possible to know if beforeEach is annotated on the method or class.
+- Including a concept of distance would be helpful to differentiate ambiguous applications
 
 The problems:
 - The primary AnnotationSupport.findAnnotation method doesn't find inherited or nested annotation.
 - The EXPERIMENTAL findAnnotation method can find nested annotations, but not inherited.
 - None of the methods tell you what class the annotation is on
 - Its impossible to tell if an extension was registered by an annotation on a method or class.  But perhaps it doesn't matter, since you can search the method first.
+
