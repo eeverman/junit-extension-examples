@@ -11,7 +11,7 @@ import java.util.*;
  */
 public class SimpleExt implements BeforeEachCallback, AfterEachCallback {
 
-	static Queue<SimpleExt> instances = new LinkedList<>();
+	static Queue<String> beforeInvokes = new LinkedList<>();
 
 	private String _name;
 
@@ -25,18 +25,18 @@ public class SimpleExt implements BeforeEachCallback, AfterEachCallback {
 
 	@Override
 	public void beforeEach(final ExtensionContext context) throws IOException {
-		instances.add(this);
+		beforeInvokes.add(_name);
 		System.out.println("SimpleExt BeforeEach:  " + _name);
 	}
 
 	@Override
 	public void afterEach(final ExtensionContext context) throws IOException {
-		instances.remove();
+		beforeInvokes.remove();
 		System.out.println("SimpleExt AfterEach:  " + _name);
 	}
 
-	public static List<SimpleExt> getInstances() {
-		return instances.stream().toList();
+	public static List<String> getBeforeInvocations() {
+		return beforeInvokes.stream().toList();
 	}
 
 	public String getName() {

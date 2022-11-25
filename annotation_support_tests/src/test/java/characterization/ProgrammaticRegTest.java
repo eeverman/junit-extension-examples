@@ -20,11 +20,11 @@ public class ProgrammaticRegTest extends ProgrammaticRegBase {
 	@Test
 	public void eachProgrammaticRegisteredSimpleExtDoesReceiveEvents() {
 
-		List<SimpleExt> exts = SimpleExt.getInstances();
-		assertEquals("Super Static", exts.get(0).getName());
-		assertEquals("Test Static", exts.get(1).getName());
-		assertEquals("Super Instance", exts.get(2).getName());
-		assertEquals("Test Instance", exts.get(3).getName());
+		List<String> exts = SimpleExt.getBeforeInvocations();
+		assertEquals("Super Static", exts.get(0));
+		assertEquals("Test Static", exts.get(1));
+		assertEquals("Super Instance", exts.get(2));
+		assertEquals("Test Instance", exts.get(3));
 
 		assertEquals(4, exts.size());
 	}
@@ -34,17 +34,17 @@ public class ProgrammaticRegTest extends ProgrammaticRegBase {
 	@Test
 	public void declarativeAnnotationIsNotAddedAfterProgrammaticRegOfSameClass() {
 
-		List<SimpleExt> exts = SimpleExt.getInstances();
-		assertEquals("Super Static", exts.get(0).getName());
-		assertEquals("Test Static", exts.get(1).getName());
-		assertEquals("Super Instance", exts.get(2).getName());
-		assertEquals("Test Instance", exts.get(3).getName());
+		List<String> exts = SimpleExt.getBeforeInvocations();
+		assertEquals("Super Static", exts.get(0));
+		assertEquals("Test Static", exts.get(1));
+		assertEquals("Super Instance", exts.get(2));
+		assertEquals("Test Instance", exts.get(3));
 
 		assertEquals(4, exts.size());
 	}
 
 	@Nested
-	class NestedTest {
+	class NestedProgrammaticRegistration {
 		@RegisterExtension
 		public static SimpleExt extNestStatic = new SimpleExt("Nested Static");
 
@@ -52,15 +52,38 @@ public class ProgrammaticRegTest extends ProgrammaticRegBase {
 		public SimpleExt extNestInstance = new SimpleExt("Nested Instance");
 
 		@Test
-		public void eachProgrammaticRegisteredSimpleExtDoesReceiveEvents() {
+		public void nestedProgrammaticRegistrationIsAddedOn() {
 
-			List<SimpleExt> exts = SimpleExt.getInstances();
-			assertEquals("Super Static", exts.get(0).getName());
-			assertEquals("Test Static", exts.get(1).getName());
-			assertEquals("Nested Static", exts.get(2).getName());
-			assertEquals("Super Instance", exts.get(3).getName());
-			assertEquals("Test Instance", exts.get(4).getName());
-			assertEquals("Nested Instance", exts.get(5).getName());
+			List<String> exts = SimpleExt.getBeforeInvocations();
+			assertEquals("Super Static", exts.get(0));
+			assertEquals("Test Static", exts.get(1));
+			assertEquals("Nested Static", exts.get(2));
+			assertEquals("Super Instance", exts.get(3));
+			assertEquals("Test Instance", exts.get(4));
+			assertEquals("Nested Instance", exts.get(5));
+
+			assertEquals(6, exts.size());
+		}
+	}
+
+	@Nested
+	class NestedProgrammaticRegistrationWithDuplicateInstances {
+		@RegisterExtension
+		public static SimpleExt extNestStatic = extTestStatic;	//Register the same INSTANCE AGAIN!!
+
+		@RegisterExtension
+		public SimpleExt extNestInstance = extTestInstance;	//Register the same INSTANCE AGAIN!!
+
+		@Test
+		public void nestedProgrammaticRegistrationIsAddedOn() {
+
+			List<String> exts = SimpleExt.getBeforeInvocations();
+			assertEquals("Super Static", exts.get(0));
+			assertEquals("Test Static", exts.get(1));
+			assertEquals("Test Static", exts.get(2));	//WHAT!!
+			assertEquals("Super Instance", exts.get(3));
+			assertEquals("Test Instance", exts.get(4));
+			assertEquals("Test Instance", exts.get(5));	//WHAT!!
 
 			assertEquals(6, exts.size());
 		}
@@ -69,18 +92,18 @@ public class ProgrammaticRegTest extends ProgrammaticRegBase {
 	@ExtendWith(SimpleExt.class)
 	@SimpleAnn(name = "MyName")
 	@Nested
-	class NestedTest2 {
+	class NestedTestWithDeclarativeRegs {
 
 		@ExtendWith(SimpleExt.class)
 		@SimpleAnn(name = "MyName")
 		@Test
-		public void eachProgrammaticRegisteredSimpleExtDoesReceiveEvents() {
+		public void stillIgnoreDeclarativeRegistrations() {
 
-			List<SimpleExt> exts = SimpleExt.getInstances();
-			assertEquals("Super Static", exts.get(0).getName());
-			assertEquals("Test Static", exts.get(1).getName());
-			assertEquals("Super Instance", exts.get(2).getName());
-			assertEquals("Test Instance", exts.get(3).getName());
+			List<String> exts = SimpleExt.getBeforeInvocations();
+			assertEquals("Super Static", exts.get(0));
+			assertEquals("Test Static", exts.get(1));
+			assertEquals("Super Instance", exts.get(2));
+			assertEquals("Test Instance", exts.get(3));
 
 			assertEquals(4, exts.size());
 		}

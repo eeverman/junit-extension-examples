@@ -362,10 +362,12 @@ Notes:
 - Add best practices of using optionals to handle direct vs ann. creation.
 - Checking method vs class annotation.
 
-There is a key bug in the JUnit docs RE
+I think there is a documentation error and/or a bug related to the
 [Extension Inheritance](https://junit.org/junit5/docs/current/user-guide/#extensions-registration-inheritance)
-Is says:
-Furthermore, a specific extension implementation can only be registered once for a given extension context and its parent contexts.
-Consequently, any attempt to register a duplicate extension implementation will be ignored.
+section of the User's Manual.  Is says:
+> Furthermore, a specific extension implementation can only be registered once for a given extension context and its parent contexts.
+> Consequently, any attempt to register a duplicate extension implementation will be ignored.
+
+It's a little what an *implementation* is, but if that means 
 This is not true for Programmatic registration - each created class is registered.
 See the ProgrammaticRegTest.
