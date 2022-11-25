@@ -11,6 +11,7 @@
 	<modules>
 		<module>simple</module>
 		<module>annotation_support_tests</module>
+		<module>duplicate-registration</module>
 	</modules>
 
 	<properties>
