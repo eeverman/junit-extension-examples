@@ -7,7 +7,8 @@ import java.util.*;
 
 /**
  * Simple extension that is intended to be registered programmatically and
- * to be identifiable:  It has a static method to ask for an instance list.
+ * to be identifiable:  It has a static method to ask for a list of beforeEach
+ * invocations.
  */
 public class SimpleExt implements BeforeEachCallback, AfterEachCallback {
 
@@ -35,6 +36,12 @@ public class SimpleExt implements BeforeEachCallback, AfterEachCallback {
 		System.out.println("SimpleExt AfterEach:  " + _name);
 	}
 
+	/**
+	 * Return the name field for the recorded beforeEach calls.
+	 * The afterEach pops them off the list, so each test should have just the
+	 * beforeEach calls related to that test.
+	 * @return
+	 */
 	public static List<String> getBeforeInvocations() {
 		return beforeInvokes.stream().toList();
 	}

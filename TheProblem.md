@@ -362,12 +362,48 @@ Notes:
 - Add best practices of using optionals to handle direct vs ann. creation.
 - Checking method vs class annotation.
 
+## Extension Doc Error
 I think there is a documentation error and/or a bug related to the
 [Extension Inheritance](https://junit.org/junit5/docs/current/user-guide/#extensions-registration-inheritance)
 section of the User's Manual.  Is says:
 > Furthermore, a specific extension implementation can only be registered once for a given extension context and its parent contexts.
 > Consequently, any attempt to register a duplicate extension implementation will be ignored.
 
-It's a little what an *implementation* is, but if that means 
+This is not how extension registration currently works as of 5.9.1.
+For [Programmatic Registration](https://junit.org/junit5/docs/current/user-guide/#extensions-registration-programmatic)
+(***PR***), a new registration is created *every time*.
+In other words, every time a field annotated with `@RegisterExtension`, a registration is created
+that will receive a set of lifecycle events.  That happens even if:
+- The same extension class has already been registered in the test class hierarchy
+- The same extension ***instance*** has already been registered in the test class hierarchy
+
+There seems to be no filtering at all on Programmatic registration - here is a characterization test
+that shows that.
+
+[Declarative Registration](https://junit.org/junit5/docs/current/user-guide/#extensions-registration-declarative)
+(***DR***), however, is ignored if there is a registration for the same extension *class* anywhere in the test class hierarchy.
+It doesn't matter if the extension was registration was ***DR*** or ***PR***, if the extension
+class is registered in the hierarchy, ***DR*** is ignored.
+
+So, the doc is wrong, but I think this is also a bug or two here.
+***PR*** attempts to register the same extension instance more than once should be ignored,
+or perhaps cause an exception.
+In most (all?) cases it would be unexpected for a single extension instance to receive multiple sets of events.
+
+It also seems like the preferred behavior would be that ***PR*** extensions should not block ***DR*** extensions.
+Each ***PR*** extension is unique because it can receive unique configuration in its constructor.
+A ***DR*** extension, however, is distinct from ***PR*** extension of the same class because it is *unconfigured*:
+It is unique from the other PR instances because its configuration is *null*.
+The extension can know from its state that its zero-argument constructor was used and can then
+go look for its configuration in annotations. 
+
+
+it may be performing some unique operation.  DR extensions of the same class are all
+the same since they cannot be configured.  A DR extension can find its configuration in annotations,
+but it doesn't need additional instances to do that.  However, 
+
+
 This is not true for Programmatic registration - each created class is registered.
 See the ProgrammaticRegTest.
+
+It's not clear what an *implementation* means class or instance here, but, but this doesn't match how extension registration
