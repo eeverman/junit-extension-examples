@@ -13,7 +13,7 @@ import org.junitpioneer.jupiter.ExpectedToFail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// Superclass is annotated w/ @UserAnn
+// Superclass is annotated w/ @ComposedFromSimpleAnn
 @ExtendWith(ExtensionContextParamResolver.class)
 public class ComposedFromSimpleAnnSubclassTest extends ComposedFromSimpleAnnTestSuperclass {
 
