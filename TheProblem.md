@@ -377,25 +377,25 @@ that will receive a set of lifecycle events.  That happens even if:
 - The same extension class has already been registered in the test class hierarchy
 - The same extension ***instance*** has already been registered in the test class hierarchy
 
-There seems to be no filtering at all on Programmatic registration - here is a characterization test
-that shows that.
+There seems to be no filtering at all on Programmatic registration -
+[here is a test that shows that](https://github.com/eeverman/junit-extension-examples/blob/36a5ef46cd87a10a8d04c95a3e6e3220f6f03cbc/duplicate-registration/src/test/java/characterization/ProgrammaticRegTest.java#L32).
 
 [Declarative Registration](https://junit.org/junit5/docs/current/user-guide/#extensions-registration-declarative)
 (***DR***), however, is ignored if there is a registration for the same extension *class* anywhere in the test class hierarchy.
 It doesn't matter if the extension was registration was ***DR*** or ***PR***, if the extension
-class is registered in the hierarchy, ***DR*** is ignored.
+class is registered in the hierarchy, ***DR*** is ignored
+[example test](https://github.com/eeverman/junit-extension-examples/blob/36a5ef46cd87a10a8d04c95a3e6e3220f6f03cbc/duplicate-registration/src/test/java/characterization/ProgrammaticRegTest.java#L49).
 
 So, the doc is wrong, but I think this is also a bug or two here.
-***PR*** attempts to register the same extension instance more than once should be ignored,
-or perhaps cause an exception.
+Using ***PR*** on an extension instance more than once should be ignored, or perhaps cause an exception.
 In most (all?) cases it would be unexpected for a single extension instance to receive multiple sets of events.
 
 It also seems like the preferred behavior would be that ***PR*** extensions should not block ***DR*** extensions.
 Each ***PR*** extension is unique because it can receive unique configuration in its constructor.
-A ***DR*** extension, however, is distinct from ***PR*** extension of the same class because it is *unconfigured*:
-It is unique from the other PR instances because its configuration is *null*.
+A ***DR*** extension, however, is distinct from a ***PR*** extension of the same class because it is *unconfigured*:
 The extension can know from its state that its zero-argument constructor was used and can then
-go look for its configuration in annotations. 
+go look for its configuration in annotations.  If that is not allowed, then DR registration on,
+say, a method can be invisibly broken by some distant superclass.
 
 
 it may be performing some unique operation.  DR extensions of the same class are all

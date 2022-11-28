@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.support.SearchOption;
+import org.junitpioneer.internal.PioneerAnnotationUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,6 +38,11 @@ public class NestedTest {
 		public void findAnnotationForExtensionShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(ExtensionUtil.findAnnotationForExtension(
 					context, SimpleAnn.class).isPresent());
+		}
+
+		@Test		//junit-pioneer
+		public void findClosestEnclosingAnnotationShouldFindParentAnnotation(ExtensionContext context) {
+			assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, SimpleAnn.class).isPresent());
 		}
 
 	}
