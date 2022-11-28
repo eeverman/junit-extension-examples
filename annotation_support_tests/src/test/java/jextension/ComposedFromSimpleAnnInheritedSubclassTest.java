@@ -8,13 +8,14 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.support.SearchOption;
 import org.junitpioneer.internal.PioneerAnnotationUtils;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // Superclass is annotated w/ @UserAnn
 @ExtendWith(ExtensionContextParamResolver.class)
-public class ComposedFromSimpleAnnInheritedTest extends ComposedFromSimpleAnnInheritedTestSuperclass {
+public class ComposedFromSimpleAnnInheritedSubclassTest extends ComposedFromSimpleAnnInheritedTestSuperclass {
 
 	@Test  // Works, so JUnit finds and uses the annotation
 	public void phaserSetToStunViaSuperClassAnnotation(ExtensionContext context) {
@@ -22,12 +23,14 @@ public class ComposedFromSimpleAnnInheritedTest extends ComposedFromSimpleAnnInh
 	}
 
 	@Test	// FAILS!! Because even those SimpleAnnInherited is inherited, UserAnn is not.
+	@ExpectedToFail("junit findAnnotation1 can't find ann. on super b/c it is not @Inherited")
 	public void findAnnotation1ShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(AnnotationSupport.findAnnotation(
 				context.getRequiredTestClass(), ComposedFromSimpleAnnInherited.class).isPresent());
 	}
 
 	@Test		// FAILS!! Because even those SimpleAnnInherited is inherited, UserAnn is not.
+	@ExpectedToFail("junit findAnnotation2 can't find ann. on super b/c it is not @Inherited")
 	public void findAnnotation2ShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(AnnotationSupport.findAnnotation(
 				context.getRequiredTestClass(), ComposedFromSimpleAnnInherited.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
@@ -40,12 +43,10 @@ public class ComposedFromSimpleAnnInheritedTest extends ComposedFromSimpleAnnInh
 	}
 
 	@Test		//junit-pioneer
+	@ExpectedToFail("pioneer findClosestEnclosingAnnotation can't find ann. on super b/c it is not @Inherited")
 	public void findClosestEnclosingAnnotationShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, ComposedFromSimpleAnnInherited.class).isPresent());
 	}
-
-
-
 
 	@Nested
 	class Nested1 {
@@ -55,12 +56,14 @@ public class ComposedFromSimpleAnnInheritedTest extends ComposedFromSimpleAnnInh
 		}
 
 		@Test	// FAILS!!! Can't handle nesting or non-inherited annotations
+		@ExpectedToFail("junit findAnnotation1 can't find ann. on super b/c it is not @Inherited")
 		public void findAnnotation1ShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(AnnotationSupport.findAnnotation(
 					context.getRequiredTestClass(), ComposedFromSimpleAnnInherited.class).isPresent());
 		}
 
 		@Test		// FAILS!!! Can't handle non-inherited annotations
+		@ExpectedToFail("junit findAnnotation2 can't find ann. on super b/c it is not @Inherited")
 		public void findAnnotation2ShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(AnnotationSupport.findAnnotation(
 					context.getRequiredTestClass(), ComposedFromSimpleAnnInherited.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
@@ -73,6 +76,7 @@ public class ComposedFromSimpleAnnInheritedTest extends ComposedFromSimpleAnnInh
 		}
 
 		@Test		//junit-pioneer
+		@ExpectedToFail("pioneer findClosestEnclosingAnnotation can't find ann. on super b/c it is not @Inherited")
 		public void findClosestEnclosingAnnotationShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, ComposedFromSimpleAnnInherited.class).isPresent());
 		}
