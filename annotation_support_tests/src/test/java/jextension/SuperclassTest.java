@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.support.SearchOption;
 import org.junitpioneer.internal.PioneerAnnotationUtils;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,12 +22,14 @@ public class SuperclassTest extends SuperclassTestBase {
 	}
 
 	@Test	// FAILS!!  Cannot find the annotation on the superclass
+	@ExpectedToFail("junit findAnnotation1 can't find ann. on super b/c it is not @Inherited")
 	public void findAnnotation1ShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(AnnotationSupport.findAnnotation(
 				context.getRequiredTestClass(), SimpleAnn.class).isPresent());
 	}
 
 	@Test		// FAILS!! - Not even the EXPERIMENTAL method is enough to find it
+	@ExpectedToFail("junit findAnnotation2 can't find ann. on super b/c it is not @Inherited")
 	public void findAnnotation2ShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(AnnotationSupport.findAnnotation(
 				context.getRequiredTestClass(), SimpleAnn.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
@@ -39,6 +42,7 @@ public class SuperclassTest extends SuperclassTestBase {
 	}
 
 	@Test		//junit-pioneer
+	@ExpectedToFail("pioneer findClosestEnclosingAnnotation can't find ann. on super b/c it is not @Inherited")
 	public void findClosestEnclosingAnnotationShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, SimpleAnn.class).isPresent());
 	}
@@ -52,12 +56,14 @@ public class SuperclassTest extends SuperclassTestBase {
 		}
 
 		@Test	// FAILS!!! Can't handle nesting or non-inherited annotations
+		@ExpectedToFail("junit findAnnotation1 can't find ann. on super b/c it is not @Inherited & can't nest")
 		public void findAnnotation1ShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(AnnotationSupport.findAnnotation(
 					context.getRequiredTestClass(), SimpleAnn.class).isPresent());
 		}
 
 		@Test		// FAILS!!! Can't handle non-inherited annotations
+		@ExpectedToFail("junit findAnnotation2 can't find ann. on super b/c it is not @Inherited")
 		public void findAnnotation2ShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(AnnotationSupport.findAnnotation(
 					context.getRequiredTestClass(), SimpleAnn.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
@@ -70,6 +76,7 @@ public class SuperclassTest extends SuperclassTestBase {
 		}
 
 		@Test		//junit-pioneer
+		@ExpectedToFail("pioneer findClosestEnclosingAnnotation can't find ann. on super b/c it is not @Inherited")
 		public void findClosestEnclosingAnnotationShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, SimpleAnn.class).isPresent());
 		}
