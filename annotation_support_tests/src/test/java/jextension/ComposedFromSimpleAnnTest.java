@@ -26,24 +26,24 @@ public class ComposedFromSimpleAnnTest {
 	@Test	// Works - no problem w/ composed annotations
 	public void findAnnotation1ShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(AnnotationSupport.findAnnotation(
-				context.getRequiredTestClass(), ComposedFromSimpleAnn.class).isPresent());
+				context.getRequiredTestClass(), SimpleAnn.class).isPresent());
 	}
 
 	@Test		// Works - no problem w/ composed annotations
 	public void findAnnotation2ShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(AnnotationSupport.findAnnotation(
-				context.getRequiredTestClass(), ComposedFromSimpleAnn.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
+				context.getRequiredTestClass(), SimpleAnn.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
 	}
 
 	@Test		//NEW PROPOSED METHOD - Works!
 	public void findAnnotationForExtensionShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(ExtensionUtil.findAnnotationForExtension(
-				context, ComposedFromSimpleAnn.class).isPresent());
+				context, SimpleAnn.class).isPresent());
 	}
 
 	@Test		// Works - no problem w/ composed annotations
 	public void findClosestEnclosingAnnotationShouldFindParentAnnotation(ExtensionContext context) {
-		assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, ComposedFromSimpleAnn.class).isPresent());
+		assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, SimpleAnn.class).isPresent());
 	}
 
 	@Nested
@@ -57,24 +57,24 @@ public class ComposedFromSimpleAnnTest {
 		@ExpectedToFail("junit findAnnotation1 can't nest")
 		public void findAnnotation1ShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(AnnotationSupport.findAnnotation(
-					context.getRequiredTestClass(), ComposedFromSimpleAnn.class).isPresent());
+					context.getRequiredTestClass(), SimpleAnn.class).isPresent());
 		}
 
 		@Test		// Works - Can handle nesting
 		public void findAnnotation2ShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(AnnotationSupport.findAnnotation(
-					context.getRequiredTestClass(), ComposedFromSimpleAnn.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
+					context.getRequiredTestClass(), SimpleAnn.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
 		}
 
 		@Test		//NEW PROPOSED METHOD - Works!
 		public void findAnnotationForExtensionShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(ExtensionUtil.findAnnotationForExtension(
-					context, ComposedFromSimpleAnn.class).isPresent());
+					context, SimpleAnn.class).isPresent());
 		}
 
 		@Test		//junit-pioneer - Works!
 		public void findClosestEnclosingAnnotationShouldFindParentAnnotation(ExtensionContext context) {
-			assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, ComposedFromSimpleAnn.class).isPresent());
+			assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, SimpleAnn.class).isPresent());
 		}
 
 	}

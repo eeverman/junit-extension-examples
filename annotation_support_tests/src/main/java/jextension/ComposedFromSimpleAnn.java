@@ -15,5 +15,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  */
 @Target({ TYPE, METHOD, ANNOTATION_TYPE })
 @Retention(RUNTIME)
-@SimpleAnnInherited
+@SimpleAnn
 public @interface ComposedFromSimpleAnn { }

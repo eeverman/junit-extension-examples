@@ -22,30 +22,27 @@ public class ComposedFromSimpleAnnInheritedSubclassTest extends ComposedFromSimp
 		assertEquals("stun", System.getProperty("phaser"));
 	}
 
-	@Test	// FAILS!! Because even those SimpleAnnInherited is inherited, UserAnn is not.
-	@ExpectedToFail("junit findAnnotation1 can't find ann. on super b/c it is not @Inherited")
+	@Test	// Works - JUnit can find inherited annotations
 	public void findAnnotation1ShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(AnnotationSupport.findAnnotation(
-				context.getRequiredTestClass(), ComposedFromSimpleAnnInherited.class).isPresent());
+				context.getRequiredTestClass(), SimpleAnnInherited.class).isPresent());
 	}
 
-	@Test		// FAILS!! Because even those SimpleAnnInherited is inherited, UserAnn is not.
-	@ExpectedToFail("junit findAnnotation2 can't find ann. on super b/c it is not @Inherited")
+	@Test		// Works - JUnit can find inherited annotations
 	public void findAnnotation2ShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(AnnotationSupport.findAnnotation(
-				context.getRequiredTestClass(), ComposedFromSimpleAnnInherited.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
+				context.getRequiredTestClass(), SimpleAnnInherited.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
 	}
 
 	@Test		//NEW PROPOSED METHOD - Works!
 	public void findAnnotationForExtensionShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(ExtensionUtil.findAnnotationForExtension(
-				context, ComposedFromSimpleAnnInherited.class).isPresent());
+				context, SimpleAnnInherited.class).isPresent());
 	}
 
-	@Test		//junit-pioneer
-	@ExpectedToFail("pioneer findClosestEnclosingAnnotation can't find ann. on super b/c it is not @Inherited")
+	@Test		//Works - junit-pioneer can find inherited annotations
 	public void findClosestEnclosingAnnotationShouldFindParentAnnotation(ExtensionContext context) {
-		assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, ComposedFromSimpleAnnInherited.class).isPresent());
+		assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, SimpleAnnInherited.class).isPresent());
 	}
 
 	@Nested
@@ -55,30 +52,28 @@ public class ComposedFromSimpleAnnInheritedSubclassTest extends ComposedFromSimp
 			assertEquals("stun", System.getProperty("phaser"));
 		}
 
-		@Test	// FAILS!!! Can't handle nesting or non-inherited annotations
-		@ExpectedToFail("junit findAnnotation1 can't find ann. on super b/c it is not @Inherited")
+		@Test	// FAILS!!! Can't handle nesting
+		@ExpectedToFail("junit findAnnotation1 can't handle nesting")
 		public void findAnnotation1ShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(AnnotationSupport.findAnnotation(
-					context.getRequiredTestClass(), ComposedFromSimpleAnnInherited.class).isPresent());
+					context.getRequiredTestClass(), SimpleAnnInherited.class).isPresent());
 		}
 
-		@Test		// FAILS!!! Can't handle non-inherited annotations
-		@ExpectedToFail("junit findAnnotation2 can't find ann. on super b/c it is not @Inherited")
+		@Test		// Works b/c its inherited and this method supports nesting
 		public void findAnnotation2ShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(AnnotationSupport.findAnnotation(
-					context.getRequiredTestClass(), ComposedFromSimpleAnnInherited.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
+					context.getRequiredTestClass(), SimpleAnnInherited.class, SearchOption.INCLUDE_ENCLOSING_CLASSES).isPresent());
 		}
 
 		@Test		//NEW PROPOSED METHOD - Works!
 		public void findAnnotationForExtensionShouldFindParentAnnotation(ExtensionContext context) {
 			assertTrue(ExtensionUtil.findAnnotationForExtension(
-					context, ComposedFromSimpleAnnInherited.class).isPresent());
+					context, SimpleAnnInherited.class).isPresent());
 		}
 
 		@Test		//junit-pioneer
-		@ExpectedToFail("pioneer findClosestEnclosingAnnotation can't find ann. on super b/c it is not @Inherited")
 		public void findClosestEnclosingAnnotationShouldFindParentAnnotation(ExtensionContext context) {
-			assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, ComposedFromSimpleAnnInherited.class).isPresent());
+			assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, SimpleAnnInherited.class).isPresent());
 		}
 
 	}
