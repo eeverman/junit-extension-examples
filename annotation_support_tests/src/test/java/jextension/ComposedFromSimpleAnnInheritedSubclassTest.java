@@ -40,7 +40,7 @@ public class ComposedFromSimpleAnnInheritedSubclassTest extends ComposedFromSimp
 				context, SimpleAnnInherited.class).isPresent());
 	}
 
-	@Test		//Works - junit-pioneer can find inherited annotations
+	@Test		//Works - junit-pioneer can find inherited annotations through non-Inherited composed ann.
 	public void findClosestEnclosingAnnotationShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(PioneerAnnotationUtils.findClosestEnclosingAnnotation(context, SimpleAnnInherited.class).isPresent());
 	}
