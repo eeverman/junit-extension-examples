@@ -22,7 +22,7 @@ public class ComposedFromSimpleAnnInheritedSubclassTest extends ComposedFromSimp
 		assertEquals("stun", System.getProperty("phaser"));
 	}
 
-	@Test	// Works - JUnit can find inherited annotations
+	@Test	// Works - JUnit can find inherited annotations through non-Inherited composed ann.
 	public void findAnnotation1ShouldFindParentAnnotation(ExtensionContext context) {
 		assertTrue(AnnotationSupport.findAnnotation(
 				context.getRequiredTestClass(), SimpleAnnInherited.class).isPresent());
